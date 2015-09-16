@@ -8,7 +8,7 @@ public class ProjectorTrack : MonoBehaviour {
 
 	private SpringJoint2D spring;
 	private Vector2 catapult;
-	private Ray rayToMouse,leftCataplutToProjectile;
+	private Ray rayToMouse,leftCataplutToProjectile,rightCataplutToProjectile;
 	private float maxStretchSqr,circleRadius;
 	private bool clickedOn;
 	private Vector2 prevVelocity;
@@ -47,15 +47,16 @@ public class ProjectorTrack : MonoBehaviour {
 		LineRendererSetup ();
 		rayToMouse = new Ray (catapult, Vector3.zero);
 		leftCataplutToProjectile = new Ray (cataplutLineFront.transform.position, Vector3.zero);
+		rightCataplutToProjectile = new Ray (cataplutLineBack.transform.position, Vector3.zero);
 		CircleCollider2D circle = GetComponent<Collider2D>() as CircleCollider2D;
 		circleRadius = circle.radius;
 	}
-	void LineRendererUpdate()
+	void LineRendererUpdate(LineRenderer line ,Ray ray)
 	{
-		Vector2 catapultToProjectile = transform.position = cataplutLineFront.transform.position;
-		leftCataplutToProjectile.direction = catapultToProjectile;
-		Vector3 holdPoint = leftCataplutToProjectile.GetPoint (catapultToProjectile.magnitude);
-		cataplutLineFront.SetPosition (1, holdPoint);
+		Vector2 catapultToProjectile = transform.position - line.transform.position;
+		ray.direction = catapultToProjectile;
+		Vector3 holdPoint = ray.GetPoint (catapultToProjectile.magnitude+circleRadius);
+		line.SetPosition (1, holdPoint);
 
 	}
 	void Dragging()
@@ -84,7 +85,7 @@ public class ProjectorTrack : MonoBehaviour {
 		}
 		if(spring!=null)
 		{
-			/*if(!GetComponent<Rigidbody2D>().isKinematic && prevVelocity.sqrMagnitude>GetComponent<Rigidbody2D>().velocity.sqrMagnitude)
+			if(!GetComponent<Rigidbody2D>().isKinematic && prevVelocity.sqrMagnitude>GetComponent<Rigidbody2D>().velocity.sqrMagnitude)
 			{
 				Destroy(spring);
 				GetComponent<Rigidbody2D>().velocity=prevVelocity;
@@ -93,12 +94,13 @@ public class ProjectorTrack : MonoBehaviour {
 			{
 				prevVelocity=GetComponent<Rigidbody2D>().velocity;
 			}
-			LineRendererUpdate();*/
+			LineRendererUpdate(cataplutLineFront,leftCataplutToProjectile);
+			LineRendererUpdate(cataplutLineBack,rightCataplutToProjectile);
 		}
 		else
 		{
-			//cataplutLineBack.enabled=false;
-			//cataplutLineFront.enabled=false;
+			cataplutLineBack.enabled=false;
+			cataplutLineFront.enabled=false;
 		}
 	}
 }
