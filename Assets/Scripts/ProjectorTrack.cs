@@ -7,6 +7,7 @@ public class ProjectorTrack : MonoBehaviour {
 	public LineRenderer cataplutLineFront,cataplutLineBack;
 
 	private SpringJoint2D spring;
+    private Rigidbody2D rigidbody2D;
 	private Vector2 catapult;
 	private Ray rayToMouse,leftCataplutToProjectile,rightCataplutToProjectile;
 	private float maxStretchSqr,circleRadius;
@@ -14,9 +15,9 @@ public class ProjectorTrack : MonoBehaviour {
 	private Vector2 prevVelocity;
 	void Awake()
 	{
-		spring = GetComponent<SpringJoint2D> ();
+        spring = GetComponent<SpringJoint2D>();
+        rigidbody2D = GetComponent<Rigidbody2D>();
 		catapult = spring.connectedAnchor*2+(Vector2)spring.connectedBody.position;
-		Debug.Log (catapult);
 		maxStretchSqr = maxStretch * maxStretch;
 	}
 
@@ -39,7 +40,7 @@ public class ProjectorTrack : MonoBehaviour {
 	void OnMouseUp()
 	{
 		spring.enabled = true;
-		GetComponent<Rigidbody2D>().isKinematic = false;
+		rigidbody2D.isKinematic = false;
 		clickedOn = false;
 	}
 	// Use this for initialization
@@ -53,16 +54,17 @@ public class ProjectorTrack : MonoBehaviour {
 	}
 	void LineRendererUpdate(LineRenderer line ,Ray ray)
 	{
-		Vector2 catapultToProjectile = transform.position - line.transform.position;
-		ray.direction = catapultToProjectile;
-		Vector3 holdPoint = ray.GetPoint (catapultToProjectile.magnitude+circleRadius);
-		line.SetPosition (1, holdPoint);
-
+        Vector3 catapultToProjectile = transform.position - (Vector3)catapult;
+        catapultToProjectile *= 1f + circleRadius / catapultToProjectile.magnitude;
+        //ray.direction = catapultToProjectile + line.transform.position - (Vector3)catapult;
+		//Vector3 holdPoint = ray.GetPoint (catapultToProjectile.magnitude);
+        catapultToProjectile.z = 0;
+        line.SetPosition(1, catapultToProjectile + (Vector3)catapult);
 	}
 	void Dragging()
 	{
 		Vector3 mouseWorldPoint = Camera.main.ScreenToWorldPoint (Input.mousePosition);
-		Vector2 catapultToMouse = new Vector2(mouseWorldPoint.x,mouseWorldPoint.y) - catapult;
+		Vector2 catapultToMouse = (Vector2)mouseWorldPoint - catapult;
 		if(catapultToMouse.sqrMagnitude > maxStretchSqr)
 		{
 			rayToMouse.direction=catapultToMouse;
@@ -82,17 +84,18 @@ public class ProjectorTrack : MonoBehaviour {
 		if(clickedOn)
 		{
 			Dragging();
+            
 		}
 		if(spring!=null)
 		{
-			if(!GetComponent<Rigidbody2D>().isKinematic && prevVelocity.sqrMagnitude>GetComponent<Rigidbody2D>().velocity.sqrMagnitude)
+			if(!rigidbody2D.isKinematic && prevVelocity.sqrMagnitude>rigidbody2D.velocity.sqrMagnitude)
 			{
 				Destroy(spring);
-				GetComponent<Rigidbody2D>().velocity=prevVelocity;
+				rigidbody2D.velocity=prevVelocity;
 			}
 			if(!clickedOn)
 			{
-				prevVelocity=GetComponent<Rigidbody2D>().velocity;
+				prevVelocity=rigidbody2D.velocity;
 			}
 			LineRendererUpdate(cataplutLineFront,leftCataplutToProjectile);
 			LineRendererUpdate(cataplutLineBack,rightCataplutToProjectile);
