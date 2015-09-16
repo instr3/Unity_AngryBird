@@ -7,7 +7,7 @@ public class ProjectorTrack : MonoBehaviour {
 	public LineRenderer cataplutLineFront,cataplutLineBack;
 
 	private SpringJoint2D spring;
-	private Transform catapult;
+	private Vector2 catapult;
 	private Ray rayToMouse,leftCataplutToProjectile;
 	private float maxStretchSqr,circleRadius;
 	private bool clickedOn;
@@ -15,7 +15,8 @@ public class ProjectorTrack : MonoBehaviour {
 	void Awake()
 	{
 		spring = GetComponent<SpringJoint2D> ();
-		catapult = spring.connectedBody.transform;
+		catapult = spring.connectedAnchor*2+(Vector2)spring.connectedBody.position;
+		Debug.Log (catapult);
 		maxStretchSqr = maxStretch * maxStretch;
 	}
 
@@ -44,7 +45,7 @@ public class ProjectorTrack : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
 		LineRendererSetup ();
-		rayToMouse = new Ray (catapult.position, Vector3.zero);
+		rayToMouse = new Ray (catapult, Vector3.zero);
 		leftCataplutToProjectile = new Ray (cataplutLineFront.transform.position, Vector3.zero);
 		CircleCollider2D circle = GetComponent<Collider2D>() as CircleCollider2D;
 		circleRadius = circle.radius;
@@ -59,8 +60,8 @@ public class ProjectorTrack : MonoBehaviour {
 	}
 	void Dragging()
 	{
-		Vector3 mouseWorldPoint = Camera.main.ScreenToViewportPoint (Input.mousePosition);
-		Vector2 catapultToMouse = mouseWorldPoint - catapult.position;
+		Vector3 mouseWorldPoint = Camera.main.ScreenToWorldPoint (Input.mousePosition);
+		Vector2 catapultToMouse = new Vector2(mouseWorldPoint.x,mouseWorldPoint.y) - catapult;
 		if(catapultToMouse.sqrMagnitude > maxStretchSqr)
 		{
 			rayToMouse.direction=catapultToMouse;
