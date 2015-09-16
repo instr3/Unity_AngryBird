@@ -7,7 +7,7 @@ public class ProjectorTrack : MonoBehaviour {
 	public LineRenderer cataplutLineFront,cataplutLineBack;
 
 	private SpringJoint2D spring;
-    private Rigidbody2D rigidbody2D;
+    private Rigidbody2D rigidbodyMF;
 	private Vector2 catapult;
 	private Ray rayToMouse,leftCataplutToProjectile,rightCataplutToProjectile;
 	private float maxStretchSqr,circleRadius;
@@ -16,7 +16,7 @@ public class ProjectorTrack : MonoBehaviour {
 	void Awake()
 	{
         spring = GetComponent<SpringJoint2D>();
-        rigidbody2D = GetComponent<Rigidbody2D>();
+        rigidbodyMF = GetComponent<Rigidbody2D>();
 		catapult = spring.connectedAnchor*2+(Vector2)spring.connectedBody.position;
 		maxStretchSqr = maxStretch * maxStretch;
 	}
@@ -40,7 +40,7 @@ public class ProjectorTrack : MonoBehaviour {
 	void OnMouseUp()
 	{
 		spring.enabled = true;
-		rigidbody2D.isKinematic = false;
+		rigidbodyMF.isKinematic = false;
 		clickedOn = false;
 	}
 	// Use this for initialization
@@ -88,14 +88,14 @@ public class ProjectorTrack : MonoBehaviour {
 		}
 		if(spring!=null)
 		{
-			if(!rigidbody2D.isKinematic && prevVelocity.sqrMagnitude>rigidbody2D.velocity.sqrMagnitude)
+			if(!rigidbodyMF.isKinematic && prevVelocity.sqrMagnitude>rigidbodyMF.velocity.sqrMagnitude)
 			{
 				Destroy(spring);
-				rigidbody2D.velocity=prevVelocity;
+				rigidbodyMF.velocity=prevVelocity;
 			}
 			if(!clickedOn)
 			{
-				prevVelocity=rigidbody2D.velocity;
+				prevVelocity=rigidbodyMF.velocity;
 			}
 			LineRendererUpdate(cataplutLineFront,leftCataplutToProjectile);
 			LineRendererUpdate(cataplutLineBack,rightCataplutToProjectile);
